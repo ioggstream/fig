@@ -396,6 +396,18 @@ class ServiceTest(DockerClientTestCase):
         service.scale(0)
         self.assertEqual(len(service.containers()), 0)
 
+    def test_scale_exec(self):
+        service = self.create_service('web')
+        service.scale(3)
+        self.assertEqual(len(service.containers()), 3)
+
+        # compare inspected hostnames with executed hostname output
+        ret = service.execute(cmd="hostname")
+        inspected_hostnames = [x.inspect()['Config']['Hostname'] for x in service.containers()]
+        for r, h in zip(ret, inspected_hostnames):
+            self.assertEquals(r.strip(), h)
+
+
     def test_scale_on_service_that_cannot_be_scaled(self):
         service = self.create_service('web', ports=['8000:8000'])
         self.assertRaises(CannotBeScaledError, lambda: service.scale(1))

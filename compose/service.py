@@ -163,6 +163,11 @@ class Service(object):
             log.info("Restarting %s..." % c.name)
             c.restart(**options)
 
+    def execute(self, **options):
+        for c in self.containers():
+            log.info("Execute command {cmd} on {container}...".format(container=c.name, **options))
+            yield c.execute(**options)
+
     def scale(self, desired_num):
         """
         Adjusts the number of containers to the specified number and ensures

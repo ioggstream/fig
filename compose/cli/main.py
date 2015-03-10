@@ -89,6 +89,7 @@ class TopLevelCommand(Command):
       pull      Pulls service images
       rm        Remove stopped containers
       run       Run a one-off command
+      exec      Run a command on all services
       scale     Set number of containers for a service
       start     Start services
       stop      Stop services
@@ -116,6 +117,29 @@ class TopLevelCommand(Command):
         """
         no_cache = bool(options.get('--no-cache', False))
         project.build(service_names=options['SERVICE'], no_cache=no_cache)
+
+    def execute(self, project, options):
+        """
+        View output from containers.
+
+        Usage: execute [options] SERVICE [COMMAND] [ARGS...]
+
+        Options:
+            --detach=False
+            --stdout=True
+            --stderr=True
+            --stream=False
+            --tty=False
+        """
+        service = project.get_service(options['SERVICE'])
+        if options['COMMAND']:
+            command = [options['COMMAND']] + options['ARGS']
+        else:
+            command = service.options.get('command')
+
+        detach = options.get('--detach', False)
+        for ret in service.execute(cmd=command, detach=detach):
+            print(ret)
 
     def help(self, project, options):
         """
