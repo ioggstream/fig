@@ -89,7 +89,7 @@ class TopLevelCommand(Command):
       pull      Pulls service images
       rm        Remove stopped containers
       run       Run a one-off command
-      exec      Run a command on all services
+      execute   Run a command on all containers of a service
       scale     Set number of containers for a service
       start     Start services
       stop      Stop services
