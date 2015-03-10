@@ -125,11 +125,11 @@ class TopLevelCommand(Command):
         Usage: execute [options] SERVICE [COMMAND] [ARGS...]
 
         Options:
-            --detach=False
-            --stdout=True
-            --stderr=True
-            --stream=False
-            --tty=False
+            --detach        Detach command execution (implies --nostdout --nostderr)
+            --nostdout      Don't write COMMAND output to stdout
+            --nostderr      Don't write COMMAND error
+            --stream
+            --tty
         """
         service = project.get_service(options['SERVICE'])
         if options['COMMAND']:
@@ -138,8 +138,17 @@ class TopLevelCommand(Command):
             command = service.options.get('command')
 
         detach = options.get('--detach', False)
-        for ret in service.execute(cmd=command, detach=detach):
-            print(ret)
+        # detach implies --nostdout and --nostderr
+        exec_options = dict(
+            detach=detach,
+            stream=options.get('--stream', False),
+            tty=options.get('--tty', False),
+            stderr=False if detach else not options.get('--nostderr'),
+            stdout=False if detach else not options.get('--nostdout'),
+        )
+        for ret in service.execute(cmd=command, **exec_options):
+            if exec_options['stderr'] or exec_options['stdout']:
+                print(ret)
 
     def help(self, project, options):
         """
